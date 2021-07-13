@@ -18,7 +18,7 @@ class CatCollectionViewCell: UICollectionViewCell {
 	
 	lazy var catImageView: UIImageView = {
 		let imageView = UIImageView()
-		imageView.contentMode = .scaleAspectFit
+		imageView.contentMode = .scaleAspectFill
 		imageView.translatesAutoresizingMaskIntoConstraints = false
 		imageView.layer.masksToBounds = true
 		return imageView
@@ -39,7 +39,7 @@ class CatCollectionViewCell: UICollectionViewCell {
 		containerView.addSubview(catImageView)
 		
 		NSLayoutConstraint.activate([
-			self.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -8),
+			self.topAnchor.constraint(equalTo: containerView.topAnchor, constant: -16),
 			self.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 8),
 			self.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: -8),
 			self.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: 8),
