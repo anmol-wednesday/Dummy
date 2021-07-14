@@ -64,6 +64,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 	func setupView() {
 		
 		title = "The Cat API"
+		navigationController?.navigationBar.backgroundColor = .white
 		let layout = UICollectionViewFlowLayout()
 		layout.minimumLineSpacing = 8
 		layout.minimumInteritemSpacing = 8
