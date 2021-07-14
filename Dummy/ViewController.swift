@@ -17,7 +17,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 			}
 		}
 	}
-	var imageCacher = [Int: UIImage]()
+	var imageCacher = [String: UIImage]()
 	let networking = Networking()
 	
 	override func viewDidLoad() {
@@ -41,21 +41,19 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "catCell", for: indexPath) as! CatCollectionViewCell
 		let cat = catData[indexPath.row]
 		
-		if imageCacher[indexPath.row] == nil {
+		if imageCacher[cat.url] == nil {
 			guard let url = URL(string: cat.url) else {
 				return cell
 			}
-			DispatchQueue.global().async { [weak self] in
-				self?.networking.getCatImageData(using: url) { imageData in
-					self?.imageCacher.updateValue(UIImage(data: imageData)!, forKey: indexPath.row)
-					DispatchQueue.main.async {
-						cell.catImageView.image = self?.imageCacher[indexPath.row]
-					}
+			networking.getCatImageData(using: url) { imageData in
+				self.imageCacher.updateValue(UIImage(data: imageData)!, forKey: cat.url)
+				DispatchQueue.main.async {
+					cell.catImageView.image = self.imageCacher[cat.url]
 				}
 			}
 		} else {
 			DispatchQueue.main.async {
-				cell.catImageView.image = self.imageCacher[indexPath.row]
+				cell.catImageView.image = self.imageCacher[cat.url]
 			}
 		}
 		return cell
