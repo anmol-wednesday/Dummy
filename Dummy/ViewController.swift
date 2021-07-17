@@ -14,14 +14,7 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDe
 	var collectionView: UICollectionView!
 	var subject = PublishSubject<[Cat]>()
 	let disposeBag = DisposeBag()
-//	var catData = [Cat]() {
-//		didSet {
-//			DispatchQueue.main.async { [weak self] in
-//				self?.collectionView.reloadData()
-//			}
-//		}
-//	}
-	var imageCacher = [String: UIImage]()
+	
 	let networking = Networking()
 	
 	override func viewDidLoad() {
@@ -41,11 +34,15 @@ class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDe
 	func bindToCollectionView() {
 		subject.bind(to: collectionView.rx.items(cellIdentifier: "catCell", cellType: CatCollectionViewCell.self)) { _ , item, cell in
 			guard let url = URL(string: item.url) else { return }
-			self.networking.getCatImageData(using: url) { imageData in
-				DispatchQueue.main.async {
-					cell.catImageView.image = UIImage(data: imageData)
+				self.networking.getCatImageData(using: url) { response in
+					DispatchQueue.main.async {
+						if let safeData = response {
+							cell.catImageView.image = UIImage(data: safeData)
+						} else {
+							cell.catImageView.image = UIImage(systemName: "picture")
+						}
+					}
 				}
-			}
 		}.disposed(by: disposeBag)
 	}
 	
