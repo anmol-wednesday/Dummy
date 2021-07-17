@@ -13,6 +13,7 @@ class CatCollectionViewCell: UICollectionViewCell {
 		let someView = UIView()
 		someView.translatesAutoresizingMaskIntoConstraints = false
 		someView.backgroundColor = .white
+		someView.layer.cornerRadius = 16
 		return someView
 	}()
 	
@@ -21,6 +22,7 @@ class CatCollectionViewCell: UICollectionViewCell {
 		imageView.contentMode = .scaleAspectFill
 		imageView.translatesAutoresizingMaskIntoConstraints = false
 		imageView.layer.masksToBounds = true
+		imageView.layer.cornerRadius = 16
 		return imageView
 	}()
 	

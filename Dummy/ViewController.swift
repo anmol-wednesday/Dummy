@@ -6,17 +6,21 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
-class ViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+class ViewController: UIViewController, UIScrollViewDelegate, UICollectionViewDelegateFlowLayout {
 	
 	var collectionView: UICollectionView!
-	var catData = [Cat]() {
-		didSet {
-			DispatchQueue.main.async { [weak self] in
-				self?.collectionView.reloadData()
-			}
-		}
-	}
+	var subject = PublishSubject<[Cat]>()
+	let disposeBag = DisposeBag()
+//	var catData = [Cat]() {
+//		didSet {
+//			DispatchQueue.main.async { [weak self] in
+//				self?.collectionView.reloadData()
+//			}
+//		}
+//	}
 	var imageCacher = [String: UIImage]()
 	let networking = Networking()
 	
@@ -25,38 +29,24 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 		
 		setupView()
 		self.networking.getCatData { response in
-			self.catData = response
+			self.subject.onNext(response)
 		}
+		bindToCollectionView()
 	}
 	
 	func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
 		return CGSize(width: collectionView.frame.size.width, height: 250)
 	}
 	
-	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-		return catData.count
-	}
-	
-	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "catCell", for: indexPath) as! CatCollectionViewCell
-		let cat = catData[indexPath.row]
-		
-		if imageCacher[cat.url] == nil {
-			guard let url = URL(string: cat.url) else {
-				return cell
-			}
-			networking.getCatImageData(using: url) { imageData in
-				self.imageCacher.updateValue(UIImage(data: imageData)!, forKey: cat.url)
+	func bindToCollectionView() {
+		subject.bind(to: collectionView.rx.items(cellIdentifier: "catCell", cellType: CatCollectionViewCell.self)) { _ , item, cell in
+			guard let url = URL(string: item.url) else { return }
+			self.networking.getCatImageData(using: url) { imageData in
 				DispatchQueue.main.async {
-					cell.catImageView.image = self.imageCacher[cat.url]
+					cell.catImageView.image = UIImage(data: imageData)
 				}
 			}
-		} else {
-			DispatchQueue.main.async {
-				cell.catImageView.image = self.imageCacher[cat.url]
-			}
-		}
-		return cell
+		}.disposed(by: disposeBag)
 	}
 	
 	func setupView() {
@@ -71,8 +61,7 @@ class ViewController: UIViewController, UICollectionViewDelegate, UICollectionVi
 		view.addSubview(collectionView)
 		collectionView.backgroundColor = .white
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
-		collectionView.delegate = self
-		collectionView.dataSource = self
+		collectionView.rx.setDelegate(self).disposed(by: disposeBag)
 		collectionView.register(CatCollectionViewCell.self, forCellWithReuseIdentifier: "catCell")
 		
 		NSLayoutConstraint.activate([
